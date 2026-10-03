@@ -4,6 +4,8 @@ const {
 	isValidPlayerCount,
 } = require('../utils/tournamentRules');
 
+const tournamentRepository = require('../repositories/tournamentRepository');
+
 function calculateLobbyCount(playerCount) {
 	if (!isValidPlayerCount(playerCount)) {
 		throw new Error('Invalid tournament player count');
@@ -30,6 +32,7 @@ function shufflePlayers(players) {
 
 	for (let index = shuffledPlayers.length - 1; index > 0; index--) {
 		const swapIndex = Math.floor(Math.random() * (index + 1));
+
 		[shuffledPlayers[index], shuffledPlayers[swapIndex]] = [
 			shuffledPlayers[swapIndex],
 			shuffledPlayers[index],
@@ -58,10 +61,45 @@ function createLobbies(players) {
 	return lobbies;
 }
 
+// ==================== DATABASE OPERATIONS ====================
+
+async function getAllTournaments() {
+	return tournamentRepository.findAll();
+}
+
+async function getTournamentById(id) {
+	const tournament = await tournamentRepository.findById(id);
+
+	if (!tournament) {
+		throw new Error('Tournament not found');
+	}
+
+	return tournament;
+}
+
+async function createTournament({ name, playerCount }) {
+	if (typeof name !== 'string' || name.trim() === '') {
+		throw new Error('Tournament name is required');
+	}
+
+	if (!isValidPlayerCount(playerCount)) {
+		throw new Error('Invalid tournament player count');
+	}
+
+	return tournamentRepository.create({
+		name: name.trim(),
+		playerCount,
+		status: 'DRAFT',
+	});
+}
+
 module.exports = {
 	calculateLobbyCount,
 	calculateNextRoundPlayerCount,
 	getRoundInfo,
 	shufflePlayers,
 	createLobbies,
+	getAllTournaments,
+	getTournamentById,
+	createTournament,
 };
