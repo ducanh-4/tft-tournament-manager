@@ -1,0 +1,158 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum TournamentStatus {
+  DRAFT
+  REGISTRATION
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum RoundStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum RoundType {
+  QUALIFIER
+  FINAL
+}
+
+enum MatchStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+model Player {
+  id           Int                @id @default(autoincrement()) @db.UnsignedInt
+  displayName  String             @db.VarChar(100)
+  createdAt    DateTime           @default(now()) @db.DateTime(3)
+  updatedAt    DateTime           @updatedAt @db.DateTime(3)
+  tournaments  TournamentPlayer[]
+  lobbyEntries LobbyPlayer[]
+  results      MatchResult[]
+}
+
+model Tournament {
+  id          Int                @id @default(autoincrement()) @db.UnsignedInt
+  name        String             @db.VarChar(150)
+  playerCount Int                @db.UnsignedInt
+  status      TournamentStatus   @default(DRAFT)
+  createdAt   DateTime           @default(now()) @db.DateTime(3)
+  updatedAt   DateTime           @updatedAt @db.DateTime(3)
+  players     TournamentPlayer[]
+  days        Day[]
+  rounds      Round[]
+
+  @@index([status])
+}
+
+model TournamentPlayer {
+  id           Int        @id @default(autoincrement()) @db.UnsignedInt
+  tournamentId Int        @db.UnsignedInt
+  playerId     Int        @db.UnsignedInt
+  registeredAt DateTime   @default(now()) @db.DateTime(3)
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  player       Player     @relation(fields: [playerId], references: [id], onDelete: Restrict)
+
+  @@unique([tournamentId, playerId])
+  @@index([playerId])
+}
+
+model Day {
+  id           Int        @id @default(autoincrement()) @db.UnsignedInt
+  tournamentId Int        @db.UnsignedInt
+  dayNumber    Int        @db.UnsignedSmallInt
+  date         DateTime?  @db.Date
+  createdAt    DateTime   @default(now()) @db.DateTime(3)
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  matches      Match[]
+
+  @@unique([tournamentId, dayNumber])
+}
+
+model Round {
+  id           Int         @id @default(autoincrement()) @db.UnsignedInt
+  tournamentId Int         @db.UnsignedInt
+  roundNumber  Int         @db.UnsignedSmallInt
+  type         RoundType   @default(QUALIFIER)
+  status       RoundStatus @default(PENDING)
+  startedAt    DateTime?   @db.DateTime(3)
+  completedAt  DateTime?   @db.DateTime(3)
+  createdAt    DateTime    @default(now()) @db.DateTime(3)
+  updatedAt    DateTime    @updatedAt @db.DateTime(3)
+  tournament   Tournament  @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  lobbies      Lobby[]
+
+  @@unique([tournamentId, roundNumber])
+  @@index([tournamentId, status])
+}
+
+model Lobby {
+  id          Int           @id @default(autoincrement()) @db.UnsignedInt
+  roundId     Int           @db.UnsignedInt
+  lobbyNumber Int           @db.UnsignedSmallInt
+  createdAt   DateTime      @default(now()) @db.DateTime(3)
+  round       Round         @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  players     LobbyPlayer[]
+  matches     Match[]
+
+  @@unique([roundId, lobbyNumber])
+}
+
+model LobbyPlayer {
+  id                    Int      @id @default(autoincrement()) @db.UnsignedInt
+  lobbyId               Int      @db.UnsignedInt
+  playerId              Int      @db.UnsignedInt
+  qualifiedForNextRound Boolean?
+  assignedAt            DateTime @default(now()) @db.DateTime(3)
+  lobby                 Lobby    @relation(fields: [lobbyId], references: [id], onDelete: Cascade)
+  player                Player   @relation(fields: [playerId], references: [id], onDelete: Restrict)
+
+  @@unique([lobbyId, playerId])
+  @@index([playerId, qualifiedForNextRound])
+}
+
+model Match {
+  id          Int           @id @default(autoincrement()) @db.UnsignedInt
+  lobbyId     Int           @db.UnsignedInt
+  dayId       Int           @db.UnsignedInt
+  gameNumber  Int           @db.UnsignedSmallInt
+  status      MatchStatus   @default(PENDING)
+  startedAt   DateTime?     @db.DateTime(3)
+  completedAt DateTime?     @db.DateTime(3)
+  createdAt   DateTime      @default(now()) @db.DateTime(3)
+  updatedAt   DateTime      @updatedAt @db.DateTime(3)
+  lobby       Lobby         @relation(fields: [lobbyId], references: [id], onDelete: Cascade)
+  day         Day           @relation(fields: [dayId], references: [id], onDelete: Restrict)
+  results     MatchResult[]
+
+  @@unique([lobbyId, gameNumber])
+  @@index([dayId, startedAt])
+  @@index([status])
+  @@map("matches")
+}
+
+model MatchResult {
+  id        Int      @id @default(autoincrement()) @db.UnsignedInt
+  matchId   Int      @db.UnsignedInt
+  playerId  Int      @db.UnsignedInt
+  placement Int      @db.UnsignedTinyInt
+  points    Int      @db.UnsignedTinyInt
+  createdAt DateTime @default(now()) @db.DateTime(3)
+  updatedAt DateTime @updatedAt @db.DateTime(3)
+  match     Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  player    Player   @relation(fields: [playerId], references: [id], onDelete: Restrict)
+
+  @@unique([matchId, playerId])
+  @@unique([matchId, placement])
+  @@index([playerId, matchId])
+}
