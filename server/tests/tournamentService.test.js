@@ -2,6 +2,8 @@ const {
   calculateLobbyCount,
   calculateNextRoundPlayerCount,
   getRoundInfo,
+  shufflePlayers,
+  createLobbies,
 } = require('../src/services/tournamentService');
 
 describe('Tournament Service', () => {
@@ -50,6 +52,71 @@ describe('Tournament Service', () => {
         nextPlayerCount: 8,
         isFinal: true,
       });
+    });
+  });
+
+  describe('shufflePlayers', () => {
+    test('does not mutate the original players array', () => {
+      const players = Array.from({ length: 16 }, (_, index) => index + 1);
+      const originalPlayers = [...players];
+
+      shufflePlayers(players);
+
+      expect(players).toEqual(originalPlayers);
+    });
+
+    test('returns the same number of players', () => {
+      const players = Array.from({ length: 32 }, (_, index) => index + 1);
+
+      const shuffled = shufflePlayers(players);
+
+      expect(shuffled).toHaveLength(32);
+      expect(shuffled).toEqual(expect.arrayContaining(players));
+    });
+  });
+
+  describe('createLobbies', () => {
+    test('creates 1 lobby for 8 players', () => {
+      const players = Array.from({ length: 8 }, (_, index) => index + 1);
+
+      const lobbies = createLobbies(players);
+
+      expect(lobbies).toHaveLength(1);
+      expect(lobbies[0]).toHaveLength(8);
+    });
+
+    test('creates 2 lobbies for 16 players', () => {
+      const players = Array.from({ length: 16 }, (_, index) => index + 1);
+
+      const lobbies = createLobbies(players);
+
+      expect(lobbies).toHaveLength(2);
+      expect(lobbies[0]).toHaveLength(8);
+      expect(lobbies[1]).toHaveLength(8);
+    });
+
+    test('creates 8 lobbies for 64 players', () => {
+      const players = Array.from({ length: 64 }, (_, index) => index + 1);
+
+      const lobbies = createLobbies(players);
+
+      expect(lobbies).toHaveLength(8);
+      expect(lobbies.every((lobby) => lobby.length === 8)).toBe(true);
+    });
+
+    test('rejects invalid player counts', () => {
+      const players = Array.from({ length: 40 }, (_, index) => index + 1);
+
+      expect(() => createLobbies(players)).toThrow();
+    });
+
+    test('does not mutate the original players array', () => {
+      const players = Array.from({ length: 16 }, (_, index) => index + 1);
+      const originalPlayers = [...players];
+
+      createLobbies(players);
+
+      expect(players).toEqual(originalPlayers);
     });
   });
 });
