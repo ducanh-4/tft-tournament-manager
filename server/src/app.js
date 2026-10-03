@@ -9,6 +9,7 @@ const {
 } = require('./controllers/tournamentController');
 
 const playerRoutes = require('./routes/playerRoutes');
+const tournamentRegistrationRoutes = require('./routes/tournamentRegistrationRoutes');
 
 const app = express();
 
@@ -27,5 +28,7 @@ app.get('/api/tournaments/:id', getTournament);
 app.post('/api/tournaments', createNewTournament);
 
 app.use('/api/players', playerRoutes);
+
+app.use('/api/tournaments', tournamentRegistrationRoutes);
 
 module.exports = app;
