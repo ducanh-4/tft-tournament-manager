@@ -1,7 +1,5 @@
 generator client {
-  provider     = "prisma-client"
-  output       = "../src/generated/prisma"
-  moduleFormat = "cjs"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -43,10 +41,10 @@ model Player {
 }
 
 model Tournament {
-  id          Int               @id @default(autoincrement()) @db.UnsignedInt
-  name        String            @db.VarChar(150)
-  playerCount Int               @db.UnsignedInt
-  status      TournamentStatus  @default(DRAFT)
+  id          Int                @id @default(autoincrement()) @db.UnsignedInt
+  name        String             @db.VarChar(150)
+  playerCount Int                @db.UnsignedInt
+  status      TournamentStatus   @default(DRAFT)
   createdAt   DateTime           @default(now()) @db.DateTime(3)
   updatedAt   DateTime           @updatedAt @db.DateTime(3)
   players     TournamentPlayer[]
@@ -133,7 +131,7 @@ model Match {
   createdAt   DateTime      @default(now()) @db.DateTime(3)
   updatedAt   DateTime      @updatedAt @db.DateTime(3)
   lobby       Lobby         @relation(fields: [lobbyId], references: [id], onDelete: Cascade)
-  day         Day           @relation(fields: [dayId], references: [id], onDelete: Restrict)
+  day         Day            @relation(fields: [dayId], references: [id], onDelete: Restrict)
   results     MatchResult[]
 
   @@unique([lobbyId, gameNumber])
