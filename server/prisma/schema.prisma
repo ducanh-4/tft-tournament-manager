@@ -1,6 +1,7 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
 }
 
 datasource db {
@@ -42,10 +43,10 @@ model Player {
 }
 
 model Tournament {
-  id          Int                @id @default(autoincrement()) @db.UnsignedInt
-  name        String             @db.VarChar(150)
-  playerCount Int                @db.UnsignedInt
-  status      TournamentStatus   @default(DRAFT)
+  id          Int               @id @default(autoincrement()) @db.UnsignedInt
+  name        String            @db.VarChar(150)
+  playerCount Int               @db.UnsignedInt
+  status      TournamentStatus  @default(DRAFT)
   createdAt   DateTime           @default(now()) @db.DateTime(3)
   updatedAt   DateTime           @updatedAt @db.DateTime(3)
   players     TournamentPlayer[]
