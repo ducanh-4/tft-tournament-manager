@@ -2,10 +2,13 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
-const { isValidPlayerCount } = require('./utils/tournamentRules');
+const {
+	getTournaments,
+	getTournament,
+	createNewTournament,
+} = require('./controllers/tournamentController');
 
 const app = express();
-const tournaments = [];
 
 app.use(cors());
 app.use(express.json());
@@ -17,43 +20,10 @@ app.get('/api/health', (req, res) => {
 	});
 });
 
-app.get('/api/tournaments', (req, res) => {
-	res.json({
-		success: true,
-		data: tournaments,
-	});
-});
+app.get('/api/tournaments', getTournaments);
 
-app.post('/api/tournaments', (req, res) => {
-	const { name, playerCount } = req.body;
+app.get('/api/tournaments/:id', getTournament);
 
-	if (typeof name !== 'string' || name.trim() === '') {
-		return res.status(400).json({
-			success: false,
-			message: 'Tournament name is required',
-		});
-	}
-
-	if (!isValidPlayerCount(playerCount)) {
-		return res.status(400).json({
-			success: false,
-			message: 'Invalid tournament player count',
-		});
-	}
-
-	const tournament = {
-		id: tournaments.length + 1,
-		name: name.trim(),
-		playerCount,
-		status: 'DRAFT',
-	};
-
-	tournaments.push(tournament);
-
-	return res.status(201).json({
-		success: true,
-		data: tournament,
-	});
-});
+app.post('/api/tournaments', createNewTournament);
 
 module.exports = app;
