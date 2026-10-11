@@ -1,3 +1,4 @@
+
 const prisma = require('../src/lib/prisma');
 const tournamentPlayerRepository = require('../src/repositories/tournamentPlayerRepository');
 const roundRepository = require('../src/repositories/roundRepository');
@@ -15,6 +16,7 @@ describe('Round Creation Service', () => {
   let eightPlayerTournament;
   let mismatchedTournament;
   let roundsQueryTournament;
+  let rollbackTournament;
   let existingRound;
   let roundsQueryRoundOne;
   let roundsQueryRoundTwo;
@@ -85,6 +87,12 @@ describe('Round Creation Service', () => {
     );
     await registerPlayers(mismatchedTournament.id, players.slice(0, 7));
 
+    rollbackTournament = await createTournament(
+      `Round Creation ${uniqueSuffix} Rollback`,
+      8,
+    );
+    await registerPlayers(rollbackTournament.id, players.slice(0, 8));
+
     roundsQueryTournament = await createTournament(
       `Round Creation ${uniqueSuffix} Round Query`,
       8,
@@ -140,9 +148,12 @@ describe('Round Creation Service', () => {
     expect(lobbyPlayers).toHaveLength(16);
     expect(assignedPlayerIds).toEqual([...playerIds].sort((first, second) => first - second));
     expect(round.lobbies.flatMap((lobby) => lobby.players)).toHaveLength(16);
-    expect(round.lobbies.flatMap((lobby) => lobby.players).every((lobbyPlayer) =>
-      lobbyPlayer.player && playerIds.includes(lobbyPlayer.playerId),
-    )).toBe(true);
+    expect(
+      round.lobbies.flatMap((lobby) => lobby.players).every(
+        (lobbyPlayer) =>
+          lobbyPlayer.player && playerIds.includes(lobbyPlayer.playerId),
+      ),
+    ).toBe(true);
   });
 
   test('creates a final round with one lobby for 8 players', async () => {
@@ -155,7 +166,9 @@ describe('Round Creation Service', () => {
   });
 
   test('throws when the tournament does not exist', async () => {
-    await expect(createRound(unknownTournamentId)).rejects.toThrow('Tournament not found');
+    await expect(createRound(unknownTournamentId)).rejects.toThrow(
+      'Tournament not found',
+    );
   });
 
   test('throws when the registered player count does not match', async () => {
@@ -171,7 +184,9 @@ describe('Round Creation Service', () => {
       roundsQueryRoundOne.id,
       roundsQueryRoundTwo.id,
     ]);
-    expect(rounds.every((round) => round.tournamentId === roundsQueryTournament.id)).toBe(true);
+    expect(
+      rounds.every((round) => round.tournamentId === roundsQueryTournament.id),
+    ).toBe(true);
   });
 
   test('returns an existing round by id', async () => {
@@ -179,6 +194,45 @@ describe('Round Creation Service', () => {
 
     expect(round.id).toBe(existingRound.id);
     expect(round.tournamentId).toBe(sixteenPlayerTournament.id);
+  });
+
+  test('rolls back the round and lobbies when adding a lobby player fails', async () => {
+    const originalAddPlayerToLobby = roundRepository.addPlayerToLobby;
+    let calls = 0;
+
+    const addPlayerSpy = jest
+      .spyOn(roundRepository, 'addPlayerToLobby')
+      .mockImplementation(async (...args) => {
+        calls += 1;
+
+        if (calls === 2) {
+          throw new Error('Simulated lobby player insert failure');
+        }
+
+        return originalAddPlayerToLobby(...args);
+      });
+
+    try {
+      await expect(createRound(rollbackTournament.id)).rejects.toThrow(
+        'Simulated lobby player insert failure',
+      );
+    } finally {
+      addPlayerSpy.mockRestore();
+    }
+
+    const rounds = await prisma.round.findMany({
+      where: { tournamentId: rollbackTournament.id },
+    });
+
+    const lobbies = await prisma.lobby.findMany({
+      where: {
+        round: { tournamentId: rollbackTournament.id },
+      },
+    });
+
+    expect(calls).toBe(2);
+    expect(rounds).toHaveLength(0);
+    expect(lobbies).toHaveLength(0);
   });
 
   test('throws when a round does not exist', async () => {

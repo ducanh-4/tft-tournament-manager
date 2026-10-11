@@ -44,14 +44,14 @@ async function findById(id) {
 	});
 }
 
-async function create(data) {
-	return prisma.round.create({
+async function create(data, client = prisma) {
+	return client.round.create({
 		data,
 	});
 }
 
-async function createLobby(roundId, lobbyNumber) {
-	return prisma.lobby.create({
+async function createLobby(roundId, lobbyNumber, client = prisma) {
+	return client.lobby.create({
 		data: {
 			roundId,
 			lobbyNumber,
@@ -59,8 +59,8 @@ async function createLobby(roundId, lobbyNumber) {
 	});
 }
 
-async function addPlayerToLobby(lobbyId, playerId) {
-	return prisma.lobbyPlayer.create({
+async function addPlayerToLobby(lobbyId, playerId, client = prisma) {
+	return client.lobbyPlayer.create({
 		data: {
 			lobbyId,
 			playerId,
