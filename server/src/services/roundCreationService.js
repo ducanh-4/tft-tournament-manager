@@ -16,14 +16,17 @@ async function createRound(tournamentId) {
 		await tournamentPlayerRepository.findPlayersByTournamentId(tournamentId);
 
 	if (registeredPlayers.length !== tournament.playerCount) {
-		throw new Error('Registered player count does not match tournament player count');
+		throw new Error(
+			'Registered player count does not match tournament player count',
+		);
 	}
 
 	const roundInfo = getRoundInfo(tournament.playerCount);
 	const existingRounds = await roundRepository.findByTournamentId(tournamentId);
 	const roundNumber =
 		existingRounds.reduce(
-			(highestRoundNumber, round) => Math.max(highestRoundNumber, round.roundNumber),
+			(highestRoundNumber, round) =>
+				Math.max(highestRoundNumber, round.roundNumber),
 			0,
 		) + 1;
 
@@ -40,6 +43,20 @@ async function createRound(tournamentId) {
 			tx,
 		);
 
+		// Mỗi round cần có Day để các Match liên kết tới.
+		let day = await tx.day.findFirst({
+			where: { tournamentId, dayNumber: 1 },
+		});
+
+		if (!day) {
+			day = await tx.day.create({
+				data: {
+					tournamentId,
+					dayNumber: 1,
+				},
+			});
+		}
+
 		const lobbies = [];
 
 		for (let index = 0; index < lobbyGroups.length; index++) {
@@ -48,6 +65,7 @@ async function createRound(tournamentId) {
 				index + 1,
 				tx,
 			);
+
 			const lobbyPlayers = [];
 
 			for (const player of lobbyGroups[index]) {
@@ -60,9 +78,25 @@ async function createRound(tournamentId) {
 				);
 			}
 
+			// Tạo 2 trận cho mỗi lobby.
+			const matches = [];
+
+			for (let gameNumber = 1; gameNumber <= 2; gameNumber++) {
+				const match = await tx.match.create({
+					data: {
+						lobbyId: lobby.id,
+						dayId: day.id,
+						gameNumber,
+					},
+				});
+
+				matches.push(match);
+			}
+
 			lobbies.push({
 				...lobby,
 				players: lobbyPlayers,
+				matches,
 			});
 		}
 
