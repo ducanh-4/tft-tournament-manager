@@ -130,8 +130,11 @@ function Bracket() {
 
   return (
     <div className="page">
-      <h1>Bảng đấu TFT</h1>
-      <p>Quản lý vòng đấu và các lobby</p>
+      <header className="page-heading">
+        <span className="eyebrow">VÒNG ĐẤU & LOBBY</span>
+        <h1>Bảng đấu TFT</h1>
+        <p>Quản lý vòng đấu và các lobby</p>
+      </header>
 
       <div className="form-card">
         <div className="form-group">
@@ -163,16 +166,22 @@ function Bracket() {
           {creating ? "Đang tạo vòng đấu..." : "Tạo vòng đấu"}
         </button>
 
-        {loading && <p>Đang tải danh sách giải đấu...</p>}
+        {loading && (
+          <p className="status-message" role="status">
+            Đang tải danh sách giải đấu...
+          </p>
+        )}
 
         {!loading && tournaments.length === 0 && (
-          <p>Chưa có giải đấu. Hãy tạo giải trước.</p>
+          <p className="empty-state">Chưa có giải đấu. Hãy tạo giải trước.</p>
         )}
 
         {message && (
           <p
             role="status"
-            style={{ color: isError ? "#dc2626" : "#16a34a" }}
+            className={`status-message ${
+              isError ? "status-message--error" : "status-message--success"
+            }`}
           >
             {message}
           </p>
@@ -229,7 +238,7 @@ function Bracket() {
                         ))}
                       </ol>
                     ) : (
-                      <p>
+                      <p className="empty-state">
                         Backend chưa trả về danh sách người chơi của lobby.
                       </p>
                     )}
@@ -238,7 +247,7 @@ function Bracket() {
               })}
             </div>
           ) : (
-            <p>
+            <p className="empty-state">
               Vòng đấu đã được tạo, nhưng cần đối chiếu cấu trúc dữ liệu
               backend để hiển thị chính xác các lobby.
             </p>

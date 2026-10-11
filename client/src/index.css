@@ -1,18 +1,74 @@
+@import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap");
+
+:root {
+  font-family: "Be Vietnam Pro", Inter, "Segoe UI", sans-serif;
+  color: #f4f5f7;
+  background: #151a23;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-optical-sizing: auto;
+  font-weight: 400;
+
+  --color-background: #151a23;
+  --color-surface: #222b38;
+  --color-surface-raised: #283342;
+  --color-border: rgba(185, 197, 214, 0.12);
+  --color-accent: #d9b66f;
+  --color-accent-soft: rgba(217, 182, 111, 0.14);
+  --color-text: #f4f5f7;
+  --color-muted: #8b96a8;
+  --color-success: #72c7a2;
+  --color-danger: #f18b8b;
+  --sidebar-width: 252px;
+}
+
 * {
   box-sizing: border-box;
 }
 
+html {
+  min-width: 320px;
+  min-height: 100%;
+  background: var(--color-background);
+}
+
 body {
+  min-width: 320px;
+  min-height: 100vh;
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f4f6f8;
-  color: #222;
+  background:
+    radial-gradient(ellipse at 72% -15%, rgba(217, 182, 111, 0.08), transparent 38%),
+    var(--color-background);
+  color: var(--color-text);
+  font-family: "Be Vietnam Pro", Inter, "Segoe UI", sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button,
+a,
+input,
+select {
+  -webkit-tap-highlight-color: transparent;
 }
 
 button {
-  padding: 10px 16px;
-  margin: 5px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
+  color: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+::selection {
+  color: #151a23;
+  background: var(--color-accent);
 }

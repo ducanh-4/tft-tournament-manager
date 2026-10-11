@@ -64,8 +64,11 @@ function CreateTournament() {
 
   return (
     <div className="page">
-      <h1>Tạo giải đấu</h1>
-      <p>Tạo một giải đấu TFT mới</p>
+      <header className="page-heading">
+        <span className="eyebrow">THIẾT LẬP</span>
+        <h1>Tạo giải đấu</h1>
+        <p>Tạo một giải đấu TFT mới</p>
+      </header>
 
       <form className="form-card" onSubmit={handleSubmit}>
         <div className="form-group">
@@ -128,9 +131,9 @@ function CreateTournament() {
         {message && (
           <p
             role="status"
-            style={{
-              color: error ? "#dc2626" : "#16a34a",
-            }}
+            className={`status-message ${
+              error ? "status-message--error" : "status-message--success"
+            }`}
           >
             {message}
           </p>

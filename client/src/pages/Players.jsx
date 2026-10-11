@@ -191,8 +191,11 @@ function Players() {
 
   return (
     <div className="page">
-      <h1>Quản lý người chơi</h1>
-      <p>Thêm người chơi và đăng ký vào giải đấu</p>
+      <header className="page-heading">
+        <span className="eyebrow">ĐỘI HÌNH THI ĐẤU</span>
+        <h1>Quản lý người chơi</h1>
+        <p>Thêm người chơi và đăng ký vào giải đấu</p>
+      </header>
 
       <form className="form-card" onSubmit={handleAddPlayer}>
         <div className="form-group">
@@ -236,52 +239,64 @@ function Players() {
         </div>
 
         {!loading && tournaments.length === 0 && (
-          <p>Chưa có giải đấu. Hãy tạo giải trước.</p>
+          <p className="empty-state">Chưa có giải đấu. Hãy tạo giải trước.</p>
         )}
 
         <h3>Danh sách người chơi ({players.length})</h3>
 
         {loading ? (
-          <p>Đang tải dữ liệu...</p>
+          <p className="status-message" role="status">
+            Đang tải dữ liệu...
+          </p>
         ) : players.length === 0 ? (
-          <p>Chưa có người chơi nào.</p>
+          <p className="empty-state">Chưa có người chơi nào.</p>
         ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>STT</th>
-                <th>Tên người chơi</th>
-                <th>Trạng thái</th>
-                <th>Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              {players.map((player, index) => {
-                const isRegistered = registeredIds.has(Number(player.id));
+          <div className="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>STT</th>
+                  <th>Tên người chơi</th>
+                  <th>Trạng thái</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                {players.map((player, index) => {
+                  const isRegistered = registeredIds.has(Number(player.id));
 
-                return (
-                  <tr key={player.id}>
-                    <td>{index + 1}</td>
-                    <td>{player.displayName ?? player.name}</td>
-                    <td>{isRegistered ? "Đã đăng ký" : "Chưa đăng ký"}</td>
-                    <td>
-                      <button
-                        type="button"
-                        disabled={
-                          !selectedTournament ||
-                          isRegistered ||
-                          registering
-                        }
-                        onClick={() => handleRegister(Number(player.id))}
-                      >
-                        {isRegistered ? "Đã đăng ký" : "Đăng ký"}
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                  return (
+                    <tr key={player.id}>
+                      <td>{index + 1}</td>
+                      <td>{player.displayName ?? player.name}</td>
+                      <td>
+                        <span
+                          className={`status-pill ${
+                            isRegistered ? "status-pill--registered" : ""
+                          }`}
+                        >
+                          {isRegistered ? "Đã đăng ký" : "Chưa đăng ký"}
+                        </span>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          disabled={
+                            !selectedTournament ||
+                            isRegistered ||
+                            registering
+                          }
+                          onClick={() => handleRegister(Number(player.id))}
+                        >
+                          {isRegistered ? "Đã đăng ký" : "Đăng ký"}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
@@ -291,11 +306,11 @@ function Players() {
         </h2>
 
         {!selectedTournament ? (
-          <p>Hãy chọn một giải đấu.</p>
+          <p className="empty-state">Hãy chọn một giải đấu.</p>
         ) : registeredPlayers.length === 0 ? (
-          <p>Chưa có người chơi đăng ký giải này.</p>
+          <p className="empty-state">Chưa có người chơi đăng ký giải này.</p>
         ) : (
-          <ol>
+          <ol className="registered-list">
             {registeredPlayers.map((registration, index) => (
               <li key={registration.id ?? registration.playerId ?? index}>
                 {getPlayerName(registration)}
@@ -308,7 +323,9 @@ function Players() {
       {message && (
         <p
           role="status"
-          style={{ color: error ? "#dc2626" : "#16a34a" }}
+          className={`status-message ${
+            error ? "status-message--error" : "status-message--success"
+          }`}
         >
           {message}
         </p>
