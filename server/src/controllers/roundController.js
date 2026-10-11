@@ -1,6 +1,34 @@
 ﻿const {
         createRound,
+        getTournamentRounds,
 } = require('../services/roundCreationService');
+
+async function getTournamentRoundsById(req, res) {
+        const tournamentId = Number(req.params.id);
+
+        if (!Number.isInteger(tournamentId) || tournamentId <= 0) {
+                return res.status(400).json({
+                        success: false,
+                        message: 'Invalid tournament id',
+                });
+        }
+
+        try {
+                const rounds = await getTournamentRounds(tournamentId);
+
+                return res.json({
+                        success: true,
+                        data: rounds,
+                });
+        } catch (error) {
+                console.error('Get tournament rounds error:', error);
+
+                return res.status(500).json({
+                        success: false,
+                        message: 'Failed to get tournament rounds',
+                });
+        }
+}
 
 async function createTournamentRound(req, res) {
         try {
@@ -47,5 +75,6 @@ async function createTournamentRound(req, res) {
 }
 
 module.exports = {
+        getTournamentRoundsById,
         createTournamentRound,
 };
