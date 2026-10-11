@@ -115,6 +115,14 @@ describe('Round Creation Service', () => {
   afterAll(async () => {
     try {
       if (tournamentIds.length > 0) {
+        await prisma.match.deleteMany({
+          where: {
+            day: {
+              tournamentId: { in: tournamentIds },
+            },
+          },
+        });
+
         await prisma.tournament.deleteMany({
           where: { id: { in: tournamentIds } },
         });

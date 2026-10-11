@@ -33,6 +33,14 @@ describe('Round API', () => {
         afterAll(async () => {
                 try {
                         if (tournament) {
+                                await prisma.match.deleteMany({
+                                        where: {
+                                                day: {
+                                                        tournamentId: tournament.id,
+                                                },
+                                        },
+                                });
+
                                 await prisma.tournament.deleteMany({
                                         where: { id: tournament.id },
                                 });
